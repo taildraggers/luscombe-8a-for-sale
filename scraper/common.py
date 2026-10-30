@@ -164,7 +164,11 @@ def extract_location(text: str) -> str:
     m = LOCATION_RE.search(text)
     if not m:
         return "Unknown"
-    city = _LOCATION_LABEL_RE.sub("", m.group(1)) or m.group(1)
+    # A period followed by a space ends a sentence ("Contact Dave. Huntsville"),
+    # while one inside a name doesn't ("St. Paul" has no other capitalized
+    # run before it), so keep only what follows the last sentence break.
+    city = re.split(r"(?<=[a-z]{2})\.\s+", m.group(1))[-1]
+    city = _LOCATION_LABEL_RE.sub("", city) or city
     return f"{city}, {m.group(2)}"
 
 
